@@ -17,8 +17,15 @@ import AnalysisPage from './pages/AnalysisPage';
 import CommunityPage from './pages/CommunityPage';
 import CommunityTabPage from './pages/CommunityTabPage';
 import ProfileTabPage from './pages/ProfileTabPage';
-import AdventuresPage from './pages/AdventuresPage';
+import TrackingTestPage from './pages/TrackingTestPage';
 import { useAppState } from './context/AppStateContext';
+
+// Debug direct profile test - uncomment to test directly
+// function App() {
+//   return (
+//     <ProfileTabPage />
+//   );
+// }
 
 // Wrap routes with this component to apply proper mobile/desktop layout
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -45,21 +52,29 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 // The main app component wrapped with all providers
 function AppWithProviders() {
   const { isMobile } = useAppState();
+  
+  console.log('AppWithProviders - isMobile:', isMobile);
 
   return (
     <Router>
       <AppLayout>
+        <div style={{ padding: '10px', background: '#f0f0f0', display: isMobile ? 'block' : 'none' }}>
+          Mobile Mode: {isMobile ? 'ON' : 'OFF'} | 
+          <a href="/profile" style={{ marginLeft: '10px', color: 'blue' }}>Profile</a> | 
+          <a href="/trails" style={{ marginLeft: '10px', color: 'blue' }}>Trails</a> | 
+          <a href="/community" style={{ marginLeft: '10px', color: 'blue' }}>Community</a>
+        </div>
+        
         <Routes>
           {/* Universal routes that work on both mobile and desktop */}
           <Route path="/community" element={<CommunityTabPage />} />
-          <Route path="/pets" element={<ProfileTabPage />} />
-          <Route path="/adventures" element={<AdventuresPage />} />
+          <Route path="/profile" element={<ProfileTabPage />} />
+          <Route path="/trails" element={<TrailsPage />} />
 
           {/* Home page redirects to community on mobile, shows homepage on desktop */}
           <Route path="/" element={isMobile ? <Navigate to="/community" /> : <HomePage />} />
           
-          {/* These routes are accessible from the Adventures tab on mobile */}
-          <Route path="/trails" element={<TrailsPage />} />
+          {/* These routes are accessible from the Trails tab on mobile */}
           <Route path="/record" element={<RecordHikePage />} />
           
           {/* These routes are accessible from the Profile tab on mobile */}
@@ -70,6 +85,9 @@ function AppWithProviders() {
           
           {/* Legacy route */}
           <Route path="/community-legacy" element={<CommunityPage />} />
+
+          {/* New route for tracking test page */}
+          <Route path="/tracking-test" element={<TrackingTestPage />} />
         </Routes>
       </AppLayout>
       
