@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { Calendar, Search, Filter, Activity, Map, Route } from 'lucide-react';
+import { Calendar, Search, Filter, Activity, Map, Route, Wind } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import PageHeader from '../components/layout/PageHeader';
 import { HikeRecord, Pet } from '../types';
-import { getHikes, getPets } from '../utils/api';
+import { getPets } from '../utils/api';
+import { HikeStorageService } from '../services/HikeStorageService';
 
 const HistoryPage: React.FC = () => {
   const [hikes, setHikes] = useState<HikeRecord[]>([]);
@@ -38,95 +39,105 @@ const HistoryPage: React.FC = () => {
     },
   ];
   
-  const mockHikes: HikeRecord[] = [
-    {
-      id: '1',
-      petId: '1',
-      customTrailName: 'Forest Park Loop',
-      date: '2025-02-15',
-      duration: 95, // in minutes
-      distance: 3.2, // in miles
-      gpsData: [],
-      notes: 'Buddy loved the creek and forest smells!',
-      weatherConditions: 'Sunny, 68°F',
-      activityType: 'Hike',
-      terrain: 'Hilly',
-      elevationGain: 320,
-    },
-    {
-      id: '2',
-      petId: '1',
-      customTrailName: 'Waterfront Trail',
-      date: '2025-02-10',
-      duration: 30,
-      distance: 1.2,
-      gpsData: [],
-      weatherConditions: 'Partly Cloudy, 55°F',
-      activityType: 'Run',
-      terrain: 'Flat',
-    },
-    {
-      id: '3',
-      petId: '2',
-      customTrailName: 'Mountain View Trail',
-      date: '2025-02-14',
-      duration: 120,
-      distance: 5.5,
-      gpsData: [],
-      notes: 'Luna did great on this challenging hike!',
-      weatherConditions: 'Clear, 60°F',
-      activityType: 'Hike',
-      terrain: 'Mountainous',
-      elevationGain: 850,
-    },
-    {
-      id: '4',
-      petId: '1',
-      customTrailName: 'Neighborhood Walk',
-      date: '2025-02-16',
-      duration: 45,
-      distance: 1.8,
-      gpsData: [],
-      weatherConditions: 'Cloudy, 62°F',
-      activityType: 'Walk',
-      terrain: 'Flat',
-    },
-    {
-      id: '5',
-      petId: '2',
-      customTrailName: 'Dog Park Visit',
-      date: '2025-02-13',
-      duration: 60,
-      distance: 0.5,
-      gpsData: [],
-      notes: 'Luna played with several other dogs and had a great time.',
-      weatherConditions: 'Sunny, 65°F',
-      activityType: 'Play',
-      terrain: 'Flat',
-    },
-  ];
-  
   useEffect(() => {
-    // In a real app, this would fetch data from the API
-    // loadData();
-    setPets(mockPets);
-    setHikes(mockHikes);
+    // Load data from storage
+    loadData();
   }, []);
   
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [fetchedPets, fetchedHikes] = await Promise.all([
-        getPets(),
-        getHikes(),
-      ]);
-      setPets(fetchedPets);
-      setHikes(fetchedHikes);
+      // Get pets (mock for now)
+      setPets(mockPets);
+      
+      // Get hikes from storage
+      const storedHikes = HikeStorageService.getAllHikes();
+      
+      // If no stored hikes exist, add some mock data for demo purposes
+      if (storedHikes.length === 0) {
+        const mockHikes: HikeRecord[] = [
+          {
+            id: '1',
+            petId: '1',
+            customTrailName: 'Forest Park Loop',
+            date: '2025-02-15',
+            duration: 95, // in minutes
+            distance: 3.2, // in miles
+            gpsData: [],
+            notes: 'Buddy loved the creek and forest smells!',
+            weatherConditions: 'Sunny, 68°F',
+            activityType: 'Hike',
+            terrain: 'Hilly',
+            elevationGain: 320,
+          },
+          {
+            id: '2',
+            petId: '1',
+            customTrailName: 'Waterfront Trail',
+            date: '2025-02-10',
+            duration: 30,
+            distance: 1.2,
+            gpsData: [],
+            weatherConditions: 'Partly Cloudy, 55°F',
+            activityType: 'Run',
+            terrain: 'Flat',
+          },
+          {
+            id: '3',
+            petId: '2',
+            customTrailName: 'Mountain View Trail',
+            date: '2025-02-14',
+            duration: 120,
+            distance: 5.5,
+            gpsData: [],
+            notes: 'Luna did great on this challenging hike!',
+            weatherConditions: 'Clear, 60°F',
+            activityType: 'Hike',
+            terrain: 'Mountainous',
+            elevationGain: 850,
+          },
+          {
+            id: '4',
+            petId: '1',
+            customTrailName: 'Neighborhood Walk',
+            date: '2025-02-16',
+            duration: 45,
+            distance: 1.8,
+            gpsData: [],
+            weatherConditions: 'Cloudy, 62°F',
+            activityType: 'Walk',
+            terrain: 'Flat',
+          },
+          {
+            id: '5',
+            petId: '2',
+            customTrailName: 'Dog Park Visit',
+            date: '2025-02-13',
+            duration: 60,
+            distance: 0.5,
+            gpsData: [],
+            notes: 'Luna played with several other dogs and had a great time.',
+            weatherConditions: 'Sunny, 65°F',
+            activityType: 'Play',
+            terrain: 'Flat',
+          },
+        ];
+        
+        // Add each mock hike to storage
+        mockHikes.forEach(hike => {
+          const hikeWithoutId = { ...hike };
+          // Create a new object without the id property instead of using delete
+          const { id, ...hikeData } = hikeWithoutId;
+          HikeStorageService.saveHike(hikeData);
+        });
+        
+        // Get all hikes again (now including mock data)
+        setHikes(HikeStorageService.getAllHikes());
+      } else {
+        setHikes(storedHikes);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
-      // Use mock data as fallback
-      setPets(mockPets);
-      setHikes(mockHikes);
     } finally {
       setIsLoading(false);
     }

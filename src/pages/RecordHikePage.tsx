@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { MapPin } from 'lucide-react';
 import HikeRecordingForm from '../components/hike/HikeRecordingForm';
 import PageHeader from '../components/layout/PageHeader';
+import { Card } from '../components/ui/Card';
 import { Pet, HikeRecord, GpsPoint } from '../types';
-import { getPets, recordHike } from '../utils/api';
+import { getPets } from '../utils/api';
+import { HikeStorageService } from '../services/HikeStorageService';
 
 const RecordHikePage: React.FC = () => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Parse URL search params
+  const searchParams = new URLSearchParams(location.search);
+  const trailId = searchParams.get('trailId');
+  const trailName = searchParams.get('trailName');
   
   // Mock data for preview purposes
   const mockPets: Pet[] = [
@@ -91,22 +100,22 @@ const RecordHikePage: React.FC = () => {
       const hikeData: Omit<HikeRecord, 'id'> = {
         ...data,
         gpsData,
+        trailId: trailId || undefined,
+        customTrailName: trailName || data.customTrailName,
         elevationGain: elevationGain || undefined,
         minElevation: minElevation || undefined,
         maxElevation: maxElevation || undefined,
       };
       
-      // In a real app, this would record a hike in the API
-      // const newHike = await recordHike(hikeData);
+      // Save the hike using our storage service
+      const newHike = HikeStorageService.saveHike(hikeData);
       
-      // For demo purposes, just simulate success
-      console.log('Recording activity with data:', hikeData);
+      console.log('Recorded activity with data:', newHike);
       
       toast.success(`${data.activityType || 'Activity'} recorded successfully!`);
       
       // After saving, redirect to history or analysis page
-      const mockId = Date.now().toString();
-      navigate(`/analysis/${mockId}`);
+      navigate(`/analysis/${newHike.id}`);
     } catch (error) {
       console.error('Error recording activity:', error);
       toast.error('Failed to record activity. Please try again.');
@@ -117,9 +126,25 @@ const RecordHikePage: React.FC = () => {
 
   return (
     <div className="pb-20 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <PageHeader title="Track Activity" showBackButton backTo="/adventures" />
+      <PageHeader title="Track Activity" showBackButton backTo="/trails" />
       
       <div className="max-w-lg mx-auto px-4 py-4">
+        {trailName && (
+          <Card className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800">
+            <div className="flex items-start">
+              <MapPin className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5 mr-2 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium text-emerald-900 dark:text-emerald-300">
+                  {trailName}
+                </h3>
+                <p className="text-sm text-emerald-800 dark:text-emerald-400">
+                  Recording activity on this trail
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+        
         {pets.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 text-center dark:border dark:border-gray-700">
             <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">No Pets Found</h2>
@@ -127,7 +152,7 @@ const RecordHikePage: React.FC = () => {
               You need to create a pet profile before tracking an activity.
             </p>
             <button
-              onClick={() => navigate('/pets')}
+              onClick={() => navigate('/profile')}
               className="bg-emerald-600 dark:bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 dark:hover:bg-amber-600 transition-colors"
             >
               Create Pet Profile
@@ -138,6 +163,7 @@ const RecordHikePage: React.FC = () => {
             pets={pets}
             onSubmit={handleSubmit}
             isLoading={isLoading}
+            defaultTrailName={trailName || undefined}
           />
         )}
       </div>

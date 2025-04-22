@@ -7,7 +7,31 @@ import { Card } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import PageHeader from '../components/layout/PageHeader';
 import { HikeRecord, Pet, HikeAnalysis } from '../types';
-import { getHike, getPet, getHikeAnalysis, generateHikeAnalysis } from '../utils/api';
+import { getPet } from '../utils/api';
+import { HikeStorageService } from '../services/HikeStorageService';
+
+// Mock data for simple pet info
+const mockPets: Record<string, Pet> = {
+  '1': {
+    id: '1',
+    name: 'Buddy',
+    breed: 'Golden Retriever',
+    age: 4,
+    weight: 65,
+    energyLevel: 'High',
+    healthIssues: ['Mild Hip Dysplasia'],
+    photo: 'https://images.pexels.com/photos/2253275/pexels-photo-2253275.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+  },
+  '2': {
+    id: '2',
+    name: 'Luna',
+    breed: 'Border Collie',
+    age: 3,
+    weight: 45,
+    energyLevel: 'High',
+    photo: 'https://images.pexels.com/photos/551628/pexels-photo-551628.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+  }
+};
 
 const AnalysisPage: React.FC = () => {
   const { hikeId } = useParams<{ hikeId: string }>();
@@ -18,35 +42,6 @@ const AnalysisPage: React.FC = () => {
   const [analysis, setAnalysis] = useState<HikeAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  
-  // Mock data for preview purposes (customized based on activity type)
-  const mockHike: HikeRecord = {
-    id: '1',
-    petId: '1',
-    customTrailName: 'Forest Park Loop',
-    date: '2025-02-15',
-    duration: 95, // in minutes
-    distance: 3.2, // in miles
-    gpsData: [],
-    notes: 'Buddy loved the creek and forest smells! He seemed to have a lot of energy throughout the hike and was alert and attentive to surroundings.',
-    weatherConditions: 'Sunny, 68°F',
-    activityType: 'Hike',
-    terrain: 'Hilly',
-    elevationGain: 320,
-    maxElevation: 890,
-    minElevation: 570,
-  };
-  
-  const mockPet: Pet = {
-    id: '1',
-    name: 'Buddy',
-    breed: 'Golden Retriever',
-    age: 4,
-    weight: 65,
-    energyLevel: 'High',
-    healthIssues: ['Mild Hip Dysplasia'],
-    photo: 'https://images.pexels.com/photos/2253275/pexels-photo-2253275.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-  };
 
   // Generate dynamic analysis based on the pet's breed, weight, and the hike details
   const generateCustomAnalysis = (hike: HikeRecord, pet: Pet): HikeAnalysis => {
@@ -66,9 +61,9 @@ const AnalysisPage: React.FC = () => {
       : `The relatively flat terrain was appropriate for ${pet.name}'s activity level.`;
     
     return {
-      id: '1',
-      hikeId: '1',
-      petId: '1',
+      id: Date.now().toString(),
+      hikeId: hike.id,
+      petId: pet.id,
       overview: `${pet.name} had a great ${hike.duration}-minute ${hike.activityType?.toLowerCase() || 'hike'} covering ${hike.distance} miles on the ${hike.customTrailName} trail. The weather was ${hike.weatherConditions?.toLowerCase() || 'ideal'}, providing comfortable conditions for a ${pet.breed}. ${breedSpecificInsight} The pace was moderate at about ${Math.round(hike.duration / hike.distance)} minutes per mile, which is appropriate for a trail with ${hike.terrain === 'Flat' ? 'minimal' : 'some'} elevation changes.`,
       pawHealthInsights: healthInsight,
       restStopRecommendations: `For a ${pet.breed} like ${pet.name} on a trail of this length, ${Math.ceil(hike.distance/1.5)}-${Math.ceil(hike.distance)} rest stops would be ideal. Given the ${hike.weatherConditions?.includes('Sunny') ? 'sunny' : 'current'} conditions, ensure water breaks every 30 minutes to prevent dehydration. ${hike.notes?.includes('creek') ? 'The creek mentioned in your notes provided a perfect natural rest stop for cooling down.' : ''}`,
@@ -80,14 +75,7 @@ const AnalysisPage: React.FC = () => {
   
   useEffect(() => {
     if (hikeId) {
-      // In a real app, this would fetch data from the API
-      // loadData();
-      
-      // For demo purposes, use mock data
-      setHike(mockHike);
-      setPet(mockPet);
-      // Don't automatically set analysis so user can generate it
-      // setAnalysis(mockAnalysis);
+      loadData();
     } else {
       // Display list of hikes if no ID is provided
       navigate('/history');
@@ -99,19 +87,22 @@ const AnalysisPage: React.FC = () => {
     
     setIsLoading(true);
     try {
-      // In a real app, fetch the actual data
-      const hikeData = await getHike(hikeId);
-      setHike(hikeData);
+      // Load hike from local storage
+      const hikeData = HikeStorageService.getHikeById(hikeId);
       
-      const petData = await getPet(hikeData.petId);
-      setPet(petData);
-      
-      try {
-        const analysisData = await getHikeAnalysis(hikeId);
-        setAnalysis(analysisData);
-      } catch (error) {
-        // Analysis might not exist yet, which is fine
-        setAnalysis(null);
+      if (hikeData) {
+        setHike(hikeData);
+        
+        // For now, use mock pets data - in a real app we would fetch pet data from an API
+        const petData = mockPets[hikeData.petId];
+        if (petData) {
+          setPet(petData);
+        } else {
+          toast.error('Pet data not found');
+        }
+      } else {
+        toast.error('Hike not found');
+        navigate('/history');
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -125,10 +116,7 @@ const AnalysisPage: React.FC = () => {
   const handleRequestAnalysis = async (hikeId: string) => {
     setIsGenerating(true);
     try {
-      // In a real app, this would call the API
-      // const newAnalysis = await generateHikeAnalysis(hikeId);
-      
-      // For demo purposes, generate a personalized analysis based on the pet's data and hike details
+      // Generate a personalized analysis based on the pet's data and hike details
       if (hike && pet) {
         const customAnalysis = generateCustomAnalysis(hike, pet);
         
@@ -198,21 +186,7 @@ const AnalysisPage: React.FC = () => {
             pet={pet}
             onShare={handleShare}
           />
-        ) : (
-          <Card variant="elevated" className="flex flex-col items-center justify-center p-8 h-full dark:border dark:border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">No Analysis Yet</h3>
-            <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
-              Generate an AI-powered analysis to get personalized insights for your pet's {hike.activityType?.toLowerCase() || 'hike'}.
-            </p>
-            <Button
-              onClick={() => handleRequestAnalysis(hike.id)}
-              isLoading={isGenerating}
-              disabled={isGenerating}
-            >
-              Generate Analysis
-            </Button>
-          </Card>
-        )}
+        ) : null}
       </div>
     </div>
   );
