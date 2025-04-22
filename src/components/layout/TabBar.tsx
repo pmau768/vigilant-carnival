@@ -1,24 +1,22 @@
 import React from 'react';
-import { Users, User, Compass, Heart, History } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Users, User, Compass } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
 
 const TabBar: React.FC = () => {
-  const location = useLocation();
-  
   const tabs = [
     { 
       path: '/community', 
       label: 'Community', 
       icon: <Users className="h-6 w-6" />,
-      activeWhen: ['/community']
+      activeWhen: ['/community', '/community-legacy']
     },
     { 
       path: '/pets', 
       label: 'Profile', 
       icon: <User className="h-6 w-6" />,
-      activeWhen: ['/pets', '/pet']
+      activeWhen: ['/pets', '/pet', '/history', '/analysis']
     },
     { 
       path: '/adventures', 
@@ -27,10 +25,6 @@ const TabBar: React.FC = () => {
       activeWhen: ['/adventures', '/trails', '/record']
     },
   ];
-  
-  const isActive = (tab: typeof tabs[0]) => {
-    return tab.activeWhen.some(path => location.pathname.startsWith(path));
-  };
   
   return (
     <div className="fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-50">

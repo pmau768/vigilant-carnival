@@ -10,7 +10,6 @@ import TabBar from './components/layout/TabBar';
 import Footer from './components/layout/Footer';
 import HomePage from './pages/HomePage';
 import TrailsPage from './pages/TrailsPage';
-import PetsPage from './pages/PetsPage';
 import PetProfilePage from './pages/PetProfilePage';
 import RecordHikePage from './pages/RecordHikePage';
 import HistoryPage from './pages/HistoryPage';
@@ -51,19 +50,25 @@ function AppWithProviders() {
     <Router>
       <AppLayout>
         <Routes>
-          {/* Three main tab pages for mobile */}
+          {/* Universal routes that work on both mobile and desktop */}
           <Route path="/community" element={<CommunityTabPage />} />
           <Route path="/pets" element={<ProfileTabPage />} />
           <Route path="/adventures" element={<AdventuresPage />} />
 
-          {/* Other pages */}
+          {/* Home page redirects to community on mobile, shows homepage on desktop */}
           <Route path="/" element={isMobile ? <Navigate to="/community" /> : <HomePage />} />
+          
+          {/* These routes are accessible from the Adventures tab on mobile */}
           <Route path="/trails" element={<TrailsPage />} />
-          <Route path="/pet/:petId" element={<PetProfilePage />} />
           <Route path="/record" element={<RecordHikePage />} />
+          
+          {/* These routes are accessible from the Profile tab on mobile */}
+          <Route path="/pet/:petId" element={<PetProfilePage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/analysis/:hikeId" element={<AnalysisPage />} />
           <Route path="/analysis" element={<HistoryPage />} />
+          
+          {/* Legacy route */}
           <Route path="/community-legacy" element={<CommunityPage />} />
         </Routes>
       </AppLayout>
