@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Pet {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  avatarUrl  String?  @map("avatar_url")
+  breed      String?
+  age        Int?
+  userId     String   @map("user_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @default(now()) @map("updated_at") @db.Timestamptz
+  hikes      Hike[]
+
+  @@map("pets")
+}
+
+model Hike {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  petId        String         @map("pet_id") @db.Uuid
+  userId       String         @map("user_id") @db.Uuid
+  startTime    DateTime       @default(now()) @map("start_time") @db.Timestamptz
+  endTime      DateTime?      @map("end_time") @db.Timestamptz
+  distance     Float?         @default(0)
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime       @default(now()) @map("updated_at") @db.Timestamptz
+  pet          Pet            @relation(fields: [petId], references: [id], onDelete: Cascade)
+  locations    HikeLocation[]
+
+  @@map("hikes")
+}
+
+model HikeLocation {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hikeId    String   @map("hike_id") @db.Uuid
+  location  String   // Stored as PostGIS Point but represented as GeoJSON in Prisma
+  elevation Float?
+  timestamp DateTime @default(now()) @db.Timestamptz
+  hike      Hike     @relation(fields: [hikeId], references: [id], onDelete: Cascade)
+
+  @@map("hike_locations")
+} 

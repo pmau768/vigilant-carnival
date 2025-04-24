@@ -22,6 +22,8 @@ import { TrailsPage } from './pages/trail';
 import { PetProfilePage } from './pages/pet';
 import { CommunityPage } from './pages/community';
 import { ProfileTabPage, CommunityTabPage } from './pages';
+import SupabaseTest from './pages/SupabaseTest';
+import ReactQueryTest from './pages/ReactQueryTest';
 
 // Wrap routes with this component to apply proper mobile/desktop layout
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -58,7 +60,9 @@ function AppWithProviders() {
           Mobile Mode: {isMobile ? 'ON' : 'OFF'} | 
           <a href="/profile" style={{ marginLeft: '10px', color: 'blue' }}>Profile</a> | 
           <a href="/trails" style={{ marginLeft: '10px', color: 'blue' }}>Trails</a> | 
-          <a href="/community" style={{ marginLeft: '10px', color: 'blue' }}>Community</a>
+          <a href="/community" style={{ marginLeft: '10px', color: 'blue' }}>Community</a> |
+          <a href="/supabase-test" style={{ marginLeft: '10px', color: 'blue' }}>Supabase</a> |
+          <a href="/react-query-test" style={{ marginLeft: '10px', color: 'blue' }}>React Query</a>
         </div>
         
         <Routes>
@@ -84,6 +88,10 @@ function AppWithProviders() {
 
           {/* New route for tracking test page */}
           <Route path="/tracking-test" element={<TrackingTestPage />} />
+          
+          {/* Supabase test pages */}
+          <Route path="/supabase-test" element={<SupabaseTest />} />
+          <Route path="/react-query-test" element={<ReactQueryTest />} />
         </Routes>
       </AppLayout>
       

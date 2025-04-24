@@ -14,4 +14,7 @@ export { AnalysisService } from './AnalysisService';
 export { GeolocationService } from './GeolocationService';
 
 // API services
-export * from './api'; 
+export * from './api';
+
+// Supabase services
+export * from './SupabaseService'; 
