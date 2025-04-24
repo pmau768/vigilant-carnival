@@ -1,18 +1,29 @@
-// Re-export all hooks for easy imports
-export { usePetSWR } from './usePet';
-export * from './usePets';
-export * from './useTrails';
-export * from './useHikeRecorder';
-export * from './useHikeUploader';
-export * from './useHikeAnalysis';
-export * from './useWeeklyStats';
-export * from './useFavoriteTrails';
+/**
+ * Centralized exports for all hooks
+ * This allows importing from 'hooks' instead of individual files
+ */
 
-// Also export existing hooks
-export * from './useActivityDetection';
-export * from './useGeolocation';
-export * from './useHikeData';
-export * from './useLocalStorage';
-export * from './useLocationName';
-export * from './usePetData';
-export * from './useWeather'; 
+// Activity related hooks
+export { useActivityDetection } from './useActivityDetection';
+export { useGeolocation } from './useGeolocation';
+export { useLocationName } from './useLocationName';
+export { useWeather } from './useWeather';
+
+// Hike related hooks
+export { useHikeData } from './useHikeData';
+export { useHikeRecorder } from './useHikeRecorder';
+export { useHikeAnalysis } from './useHikeAnalysis';
+export { useHikeUploader } from './useHikeUploader';
+export { useWeeklyStats } from './useWeeklyStats';
+
+// Pet related hooks
+export { usePet } from './usePet';
+export { usePets } from './usePets';
+export { usePetData } from './usePetData';
+
+// Trail related hooks
+export { useTrails } from './useTrails';
+export { useFavoriteTrails } from './useFavoriteTrails';
+
+// Storage related hooks
+export { useLocalStorage } from './useLocalStorage'; 

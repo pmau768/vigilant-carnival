@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { MapPin } from 'lucide-react';
+
+// Components
 import HikeRecordingForm from '../components/hike/HikeRecordingForm';
-import PageHeader from '../components/layout/PageHeader';
-import { Card } from '../components/ui/Card';
+import { PageHeader } from '../components/layout';
+import { Card } from '../components/ui';
+
+// Types
 import { Pet, HikeRecord, GpsPoint } from '../types';
-import { getPets } from '../utils/api';
-import { HikeStorageService } from '../services/HikeStorageService';
-import { LocalStorageService } from '../services/LocalStorageService';
+
+// Services
+import { HikeStorageService, LocalStorageService } from '../services';
 
 // Check if localStorage is available
 const isLocalStorageAvailable = () => {

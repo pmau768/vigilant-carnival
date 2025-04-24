@@ -3,29 +3,25 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+// Context providers
 import { ThemeProvider } from './context/ThemeContext';
-import { AppStateProvider } from './context/AppStateContext';
-import Navbar from './components/layout/Navbar';
-import TabBar from './components/layout/TabBar';
-import Footer from './components/layout/Footer';
-import HomePage from './pages/HomePage';
-import TrailsPage from './pages/TrailsPage';
-import PetProfilePage from './pages/PetProfilePage';
-import RecordHikePage from './pages/RecordHikePage';
-import HistoryPage from './pages/HistoryPage';
-import AnalysisPage from './pages/AnalysisPage';
-import CommunityPage from './pages/CommunityPage';
-import CommunityTabPage from './pages/CommunityTabPage';
-import ProfileTabPage from './pages/ProfileTabPage';
-import TrackingTestPage from './pages/TrackingTestPage';
-import { useAppState } from './context/AppStateContext';
+import { AppStateProvider, useAppState } from './context/AppStateContext';
 
-// Debug direct profile test - uncomment to test directly
-// function App() {
-//   return (
-//     <ProfileTabPage />
-//   );
-// }
+// Layout components
+import { Navbar, Footer, TabBar } from './components/layout';
+
+// Pages
+import { HomePage } from './pages';
+import { 
+  RecordHikePage, 
+  HistoryPage, 
+  AnalysisPage, 
+  TrackingTestPage 
+} from './pages/activity';
+import { TrailsPage } from './pages/trail';
+import { PetProfilePage } from './pages/pet';
+import { CommunityPage } from './pages/community';
+import { ProfileTabPage, CommunityTabPage } from './pages';
 
 // Wrap routes with this component to apply proper mobile/desktop layout
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
