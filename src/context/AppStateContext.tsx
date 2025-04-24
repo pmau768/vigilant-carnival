@@ -20,14 +20,17 @@ const AppStateContext = createContext<AppStateContextType | undefined>(undefined
 
 // Provider component
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  // Force mobile mode for now to help with testing
+  const [isMobile, setIsMobile] = useState(true);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [recentHikes, setRecentHikes] = useState<HikeRecord[]>([]);
   const [favoriteTrails, setFavoriteTrails] = useState<TrailSuggestion[]>([]);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      // For testing, keep it always in mobile mode
+      // setIsMobile(window.innerWidth < 768);
+      setIsMobile(true);
     };
     
     window.addEventListener('resize', handleResize);

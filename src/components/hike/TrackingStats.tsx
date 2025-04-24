@@ -1,6 +1,6 @@
 import React from 'react';
-import { Map, Route, Activity, Wind, Clock, TrendingUp, MapPin, Mountain, Thermometer } from 'lucide-react';
-import { formatTime, formatDistance, formatPace } from '../../utils/format';
+import { Map, Route, Activity, Wind, TrendingUp, MapPin, Mountain, Thermometer, Cloud, CloudRain, Sun } from 'lucide-react';
+import { formatTime, formatDistance } from '../../utils/format';
 import { getActivityColorClasses } from '../../utils/activity';
 import { ActivityType } from '../../types';
 

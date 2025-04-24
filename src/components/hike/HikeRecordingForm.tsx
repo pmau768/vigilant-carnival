@@ -25,9 +25,10 @@ interface HikeRecordingFormProps {
   pets: Pet[];
   onSubmit: (data: FormData, gpsData: GpsPoint[]) => void;
   isLoading: boolean;
+  defaultTrailName?: string;
 }
 
-const HikeRecordingForm: React.FC<HikeRecordingFormProps> = ({ pets, onSubmit, isLoading }) => {
+const HikeRecordingForm: React.FC<HikeRecordingFormProps> = ({ pets, onSubmit, isLoading, defaultTrailName }) => {
   // Use the geolocation hook to handle location tracking
   const [
     {
@@ -113,7 +114,7 @@ const HikeRecordingForm: React.FC<HikeRecordingFormProps> = ({ pets, onSubmit, i
       date: new Date().toISOString().split('T')[0],
       duration: Math.floor(elapsedTime / 60), // convert seconds to minutes
       distance: parseFloat(distance.toFixed(2)),
-      customTrailName: locationName || `Activity on ${new Date().toLocaleDateString()}`,
+      customTrailName: defaultTrailName || locationName || `Activity on ${new Date().toLocaleDateString()}`,
       notes: data.notes || '',
       weatherConditions: currentWeather || undefined,
       activityType: detectedActivity,

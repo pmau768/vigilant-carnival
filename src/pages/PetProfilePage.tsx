@@ -82,7 +82,7 @@ const PetProfilePage: React.FC = () => {
   
   return (
     <div className="pb-20 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <PageHeader title={pet.name} showBackButton backTo="/pets" />
+      <PageHeader title={pet.name} showBackButton backTo="/profile" />
       
       {/* Profile header */}
       <div className="max-w-lg mx-auto px-4 py-4">
