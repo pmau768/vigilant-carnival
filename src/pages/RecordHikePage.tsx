@@ -8,10 +8,24 @@ import { Card } from '../components/ui/Card';
 import { Pet, HikeRecord, GpsPoint } from '../types';
 import { getPets } from '../utils/api';
 import { HikeStorageService } from '../services/HikeStorageService';
+import { LocalStorageService } from '../services/LocalStorageService';
+
+// Check if localStorage is available
+const isLocalStorageAvailable = () => {
+  try {
+    const testKey = '_test_key_';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
 
 const RecordHikePage: React.FC = () => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [storageAvailable, setStorageAvailable] = useState<boolean>(true);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -54,6 +68,9 @@ const RecordHikePage: React.FC = () => {
   ];
   
   useEffect(() => {
+    // Check localStorage availability
+    setStorageAvailable(isLocalStorageAvailable());
+    
     // In a real app, this would fetch pets from the API
     // loadPets();
     setPets(mockPets);
@@ -75,7 +92,16 @@ const RecordHikePage: React.FC = () => {
   
   const handleSubmit = async (data: any, gpsData: GpsPoint[]) => {
     setIsLoading(true);
+    
+    if (!storageAvailable) {
+      toast.error('LocalStorage is not available. Activity cannot be saved.');
+      setIsLoading(false);
+      return;
+    }
+    
     try {
+      console.log('Starting activity recording process...');
+      
       // Extract additional metrics
       const elevationPoints = gpsData.filter(point => point.elevation !== undefined);
       let elevationGain = 0;
@@ -96,21 +122,41 @@ const RecordHikePage: React.FC = () => {
         maxElevation = Math.max(...allElevations);
       }
       
+      // Validate form data
+      if (!data.petId) {
+        throw new Error('Pet selection is required');
+      }
+      
       // Construct enhanced hike data
       const hikeData: Omit<HikeRecord, 'id'> = {
         ...data,
-        gpsData,
+        gpsData: gpsData || [],
         trailId: trailId || undefined,
         customTrailName: trailName || data.customTrailName,
         elevationGain: elevationGain || undefined,
         minElevation: minElevation || undefined,
         maxElevation: maxElevation || undefined,
+        date: new Date().toISOString().split('T')[0], // Ensure date is set
       };
+      
+      console.log('Prepared hike data for saving:', hikeData);
+      
+      // Check existing data
+      const existingHikes = HikeStorageService.getAllHikes();
+      console.log('Current stored hikes count:', existingHikes.length);
       
       // Save the hike using our storage service
       const newHike = HikeStorageService.saveHike(hikeData);
-      
       console.log('Recorded activity with data:', newHike);
+      
+      // Verify the save worked by trying to retrieve it
+      const savedHike = HikeStorageService.getHikeById(newHike.id);
+      if (!savedHike) {
+        console.error('Failed to verify saved hike - could not retrieve by ID');
+        throw new Error('Activity was not properly saved to storage');
+      }
+      
+      console.log('Successfully verified saved hike:', savedHike);
       
       toast.success(`${data.activityType || 'Activity'} recorded successfully!`);
       
@@ -118,7 +164,7 @@ const RecordHikePage: React.FC = () => {
       navigate(`/analysis/${newHike.id}`);
     } catch (error) {
       console.error('Error recording activity:', error);
-      toast.error('Failed to record activity. Please try again.');
+      toast.error(`Failed to record activity: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -129,6 +175,13 @@ const RecordHikePage: React.FC = () => {
       <PageHeader title="Track Activity" showBackButton backTo="/trails" />
       
       <div className="max-w-lg mx-auto px-4 py-4">
+        {!storageAvailable && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p><strong>Warning:</strong> LocalStorage is not available in your browser. Activities cannot be saved.</p>
+            <p className="text-sm mt-1">This could be due to privacy settings, private browsing mode, or storage quota limits.</p>
+          </div>
+        )}
+      
         {trailName && (
           <Card className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800">
             <div className="flex items-start">

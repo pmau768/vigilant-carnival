@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { Calendar, Search, Filter, Activity, Map, Route, Wind } from 'lucide-react';
+import { Calendar, Search, Filter, Activity, Map, Route, Wind, Compass } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import PageHeader from '../components/layout/PageHeader';
@@ -15,6 +15,7 @@ const HistoryPage: React.FC = () => {
   const [selectedPetId, setSelectedPetId] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [activityFilter, setActivityFilter] = useState<string>('');
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   // Mock data for preview purposes
   const mockPets: Pet[] = [
@@ -38,7 +39,7 @@ const HistoryPage: React.FC = () => {
       photo: 'https://images.pexels.com/photos/551628/pexels-photo-551628.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
     },
   ];
-  
+
   useEffect(() => {
     // Load data from storage
     loadData();
@@ -46,15 +47,22 @@ const HistoryPage: React.FC = () => {
   
   const loadData = async () => {
     setIsLoading(true);
+    setLoadError(null);
+    
     try {
       // Get pets (mock for now)
       setPets(mockPets);
       
+      console.log('Attempting to load hikes from storage...');
+      
       // Get hikes from storage
       const storedHikes = HikeStorageService.getAllHikes();
+      console.log('Retrieved hikes count:', storedHikes.length);
       
       // If no stored hikes exist, add some mock data for demo purposes
       if (storedHikes.length === 0) {
+        console.log('No stored hikes found, creating mock data...');
+        
         const mockHikes: HikeRecord[] = [
           {
             id: '1',
@@ -123,21 +131,31 @@ const HistoryPage: React.FC = () => {
           },
         ];
         
-        // Add each mock hike to storage
-        mockHikes.forEach(hike => {
-          const hikeWithoutId = { ...hike };
-          // Create a new object without the id property instead of using delete
-          const { id, ...hikeData } = hikeWithoutId;
-          HikeStorageService.saveHike(hikeData);
-        });
-        
-        // Get all hikes again (now including mock data)
-        setHikes(HikeStorageService.getAllHikes());
+        try {
+          // Add each mock hike to storage
+          console.log('Adding mock hikes to storage...');
+          mockHikes.forEach(hike => {
+            const { id, ...hikeData } = hike;
+            HikeStorageService.saveHike(hikeData);
+          });
+          
+          // Get all hikes again (now including mock data)
+          const updatedHikes = HikeStorageService.getAllHikes();
+          console.log('After adding mock data, hikes count:', updatedHikes.length);
+          setHikes(updatedHikes);
+        } catch (mockError) {
+          console.error('Error adding mock hikes:', mockError);
+          setLoadError('Error creating demo data. This may be due to localStorage restrictions.');
+          // At least show the UI with empty state
+          setHikes([]);
+        }
       } else {
+        console.log('Using existing stored hikes');
         setHikes(storedHikes);
       }
     } catch (error) {
       console.error('Error loading data:', error);
+      setLoadError('Failed to load activity data. Please check browser storage permissions.');
     } finally {
       setIsLoading(false);
     }
@@ -208,6 +226,12 @@ const HistoryPage: React.FC = () => {
       <PageHeader title="Activity History" rightContent={headerRightContent} />
       
       <div className="max-w-lg mx-auto px-4 py-4">
+        {loadError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p><strong>Error:</strong> {loadError}</p>
+          </div>
+        )}
+        
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6 dark:border dark:border-gray-700">
           <div className="flex flex-col space-y-4">
             <div className="relative w-full">
@@ -270,6 +294,7 @@ const HistoryPage: React.FC = () => {
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-amber-500 focus:border-emerald-500 dark:focus:border-amber-500 dark:bg-gray-700 dark:text-white flex-grow"
                 value={selectedPetId}
                 onChange={(e) => setSelectedPetId(e.target.value)}
+                aria-label="Select pet to filter"
               >
                 <option value="">All Pets</option>
                 {pets.map(pet => (
@@ -280,7 +305,11 @@ const HistoryPage: React.FC = () => {
           </div>
         </div>
         
-        {filteredHikes.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg dark:border dark:border-gray-700">
+            <p className="text-gray-600 dark:text-gray-400">Loading activities...</p>
+          </div>
+        ) : filteredHikes.length === 0 ? (
           <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg dark:border dark:border-gray-700">
             <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">No Activities Found</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -369,11 +398,11 @@ const HistoryPage: React.FC = () => {
                           </div>
                         </div>
                         
-                        {/* Show terrain if available */}
+                        {/* Show terrain if available - fixed Mountain component issue */}
                         {hike.terrain && (
                           <div className="flex items-center mb-2">
                             <div className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full flex items-center">
-                              <Mountain className="h-3 w-3 mr-1" />
+                              <Compass className="h-3 w-3 mr-1" />
                               {hike.terrain} terrain
                               {hike.elevationGain && (
                                 <span className="ml-1">• {hike.elevationGain}ft gain</span>
